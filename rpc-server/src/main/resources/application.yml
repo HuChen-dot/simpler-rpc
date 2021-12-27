@@ -1,0 +1,19 @@
+server:
+  port: 8081
+simplerpc:
+  netty:
+    server:
+      port: 9091
+      #  设置日志打印级别
+      loglevel: debug
+      threadpoll:
+#    连接处理线程数
+        bossGroupSize: 1
+#    读写处理线程数
+        workerGroupSize: 20
+#    服务端bossGroup 的等待队列大小
+        bossGroupQueueSize: 128
+
+
+
+

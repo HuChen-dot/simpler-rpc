@@ -1,0 +1,17 @@
+server:
+  port: 8082
+simplerpc:
+  netty:
+    server:
+      isrun: false
+    client:
+      #  netty连接地址
+      address: xhs|oa//127.0.0.1:9091&127.0.0.1:9092
+      connecttimeout: 3000
+      loadbalancing: random
+      threadpoll:
+        threadSize: 10
+
+
+
+
