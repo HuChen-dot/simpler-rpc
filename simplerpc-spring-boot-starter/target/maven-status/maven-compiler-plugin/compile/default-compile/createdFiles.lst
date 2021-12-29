@@ -1,5 +1,0 @@
-org/hu/rpc/config/BeanStart.class
-org/hu/rpc/common/RpcResponse.class
-org/hu/rpc/config/NettyConfig.class
-org/hu/rpc/core/server/NettyRpcServer.class
-org/hu/rpc/common/RpcRequest.class
