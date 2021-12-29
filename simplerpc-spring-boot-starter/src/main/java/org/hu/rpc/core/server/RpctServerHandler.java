@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,7 +34,9 @@ public class RpctServerHandler extends SimpleChannelInboundHandler<String> imple
     /**
      * 用来存储 被标记了@RpcService 注解的bean
      */
-    private static Map<String, Object> beans = new ConcurrentHashMap<>();
+    public static Map<String, Object> beans = new ConcurrentHashMap<>();
+
+    public List<Class> interfaceApi=new ArrayList<>();
 
     @Autowired
     private JdkProxy jdkProxy;
@@ -140,6 +140,7 @@ public class RpctServerHandler extends SimpleChannelInboundHandler<String> imple
 
             // 默认获取第一个接口作为key 的名称
             Class<?> className = interfaces[0];
+            interfaceApi.add(className);
             beans.put(className.getName(), serviceBean);
         }
 

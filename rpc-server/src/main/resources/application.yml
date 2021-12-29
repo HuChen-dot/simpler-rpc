@@ -13,6 +13,10 @@ simplerpc:
         workerGroupSize: 20
 #    服务端bossGroup 的等待队列大小
         bossGroupQueueSize: 128
+    zk:
+      address: 192.168.73.131:2191,192.168.73.131:2192,192.168.73.131:2193
+      openzk: true
+      namespace: test-rpc
 
 
 

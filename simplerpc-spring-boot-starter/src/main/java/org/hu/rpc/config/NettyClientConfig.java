@@ -43,7 +43,7 @@ public class NettyClientConfig {
 
     private List<String[]> arrayAddress = null;
 
-    private Map<String, List<String[]>> arrayAddres = null;
+    private Map<String, List<String[]>> mapAddress = new ConcurrentHashMap<>();
 
 
     public Integer getConnecttimeout() {
@@ -56,10 +56,9 @@ public class NettyClientConfig {
 
 
     public String[] getHostAndPort(String path) {
-        if (arrayAddres == null) {
+        if (mapAddress.size()==0) {
             synchronized (this) {
-                if (arrayAddres == null) {
-                    arrayAddres = new ConcurrentHashMap<>();
+                if (mapAddress.size()==0) {
 // ministry_of_personne|order//127.0.0.1:8091&127.0.0.1:8092|user//127.0.0.1:8091&127.0.0.1:8092,electronic|order//127.0.0.1:8091&127.0.0.1:8092|user//127.0.0.1:8091&127.0.0.1:8092
                     String[] depts = address.split(",");
                     for (String dept : depts) {
@@ -92,14 +91,14 @@ public class NettyClientConfig {
                                 services.add(ipAndPort);
                             }
 
-                            arrayAddres.put(deptName + "." + serviceName, services);
+                            mapAddress.put(deptName + "." + serviceName, services);
                         }
 
                     }
                 }
             }
         }
-        List<String[]> services = arrayAddres.get(path);
+        List<String[]> services = mapAddress.get(path);
         if (services == null) {
             throw new RuntimeException("找不到可以提供的服务");
         }
@@ -159,5 +158,21 @@ public class NettyClientConfig {
 
     public void setLoadbalancing(String loadbalancing) {
         this.loadbalancing = loadbalancing;
+    }
+
+    public List<String[]> getArrayAddress() {
+        return arrayAddress;
+    }
+
+    public void setArrayAddress(List<String[]> arrayAddress) {
+        this.arrayAddress = arrayAddress;
+    }
+
+    public Map<String, List<String[]>> getMapAddress() {
+        return mapAddress;
+    }
+
+    public void setMapAddress(Map<String, List<String[]>> mapAddress) {
+        this.mapAddress = mapAddress;
     }
 }

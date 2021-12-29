@@ -8,6 +8,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LoggingHandler;
 import org.hu.rpc.config.NettyServerConfig;
+import org.hu.rpc.zk.server.ServerInit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,6 +48,9 @@ public class NettyRpcServer implements Runnable {
 
     @Autowired
     private RpctServerHandler rpctServerHandler;
+
+    @Autowired
+    private ServerInit serverInit;
 
 
     private NioEventLoopGroup bossGroup = null;
@@ -92,7 +96,6 @@ public class NettyRpcServer implements Runnable {
                             // 获取 ChannelPipeline 用于注册编码器和自定义业务处理类
                             ChannelPipeline pipeline = channel.pipeline();
 
-
                             // 设置编解码器
                             channel.pipeline().addLast(new StringDecoder());
                             channel.pipeline().addLast(new StringEncoder());
@@ -104,6 +107,9 @@ public class NettyRpcServer implements Runnable {
 
                     // 绑定端口,同时将异步修改成同步
                     ChannelFuture channelFuture = serverBootstrap.bind(nettyServerConfig.getPort()).sync();
+
+                    // 启动 zk 注册中心
+                    serverInit.init(nettyServerConfig.getPort());
 
                     System.err.println("Netty 服务端启动成功");
 

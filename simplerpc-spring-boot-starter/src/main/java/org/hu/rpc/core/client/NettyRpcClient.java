@@ -88,7 +88,6 @@ public class NettyRpcClient {
             e.printStackTrace();
             // 关闭资源
             close();
-            System.err.println("客户端发生异常");
         }
     }
 

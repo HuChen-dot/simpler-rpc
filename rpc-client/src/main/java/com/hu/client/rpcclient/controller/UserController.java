@@ -29,6 +29,6 @@ public class UserController {
         if(user==null){
             return "null";
         }
-        return userService.getById(id).toString();
+        return user.toString();
     }
 }

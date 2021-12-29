@@ -8,9 +8,13 @@ simplerpc:
       #  netty连接地址
       address: xhs|oa//127.0.0.1:9091&127.0.0.1:9092
       connecttimeout: 3000
-      loadbalancing: random
+#      loadbalancing: random
       threadpoll:
         threadSize: 10
+    zk:
+      address: 192.168.73.131:2191,192.168.73.131:2192,192.168.73.131:2193
+      openzk: true
+      namespace: test-rpc
 
 
 
