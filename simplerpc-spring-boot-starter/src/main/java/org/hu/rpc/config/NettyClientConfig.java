@@ -4,6 +4,8 @@ import org.hu.rpc.config.loadbalancing.DefaultRpcLoadBalancing;
 import org.hu.rpc.config.loadbalancing.LoadBalancingConst;
 import org.hu.rpc.config.loadbalancing.RandomRpcLoadBalancing;
 import org.hu.rpc.config.loadbalancing.RpcLoadBalancing;
+import org.hu.rpc.zk.util.ZkClientUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
@@ -99,8 +101,9 @@ public class NettyClientConfig {
             }
         }
         List<String[]> services = mapAddress.get(path);
-        if (services == null) {
-            throw new RuntimeException("找不到可以提供的服务");
+        if (services == null || services.size() == 0) {
+            throw new RuntimeException("没有可以提供服务的服务者");
+
         }
         RpcLoadBalancing rpcLoadBalancing = getRpcLoadBalancing();
         return rpcLoadBalancing.load(services);

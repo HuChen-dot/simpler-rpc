@@ -6,6 +6,7 @@ import org.hu.rpc.common.RpcRequest;
 import org.hu.rpc.common.RpcResponse;
 import org.hu.rpc.config.NettyClientConfig;
 import org.hu.rpc.core.client.NettyRpcClient;
+import org.hu.rpc.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -76,7 +77,10 @@ public class JdkProxy {
                     if (result == null) {
                         return result;
                     } else {
-                        return JSON.parseObject(result.toString(), method.getReturnType());
+                        if (JsonUtils.isJsonType(result.toString())) {
+                            return JSON.parseObject(result.toString(), method.getReturnType());
+                        }
+                        return result;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

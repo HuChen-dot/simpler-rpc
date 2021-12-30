@@ -1,9 +1,8 @@
 package com.hu.client.rpcclient.controller;
 
+import com.hu.client.rpcclient.service.impl.OrderService0;
 import com.hu.client.rpcclient.service.impl.UserServiceImpl;
 import com.hu.pojo.User;
-import org.hu.rpc.config.NettyServerConfig;
-import org.hu.rpc.core.server.NettyRpcServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +20,9 @@ public class UserController {
     @Autowired
     private UserServiceImpl userService;
 
+    @Autowired
+    private OrderService0 orderService0;
+
 
     @GetMapping("/getUserById")
     public String getUserById(Integer id) {
@@ -30,5 +32,11 @@ public class UserController {
             return "null";
         }
         return user.toString();
+    }
+
+    @GetMapping("/getOrderById")
+    public String getOrderById(Integer id) {
+
+        return orderService0.find(id);
     }
 }

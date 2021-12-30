@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author: hu.chen
@@ -24,6 +22,8 @@ public class CilentInit {
 
     @Autowired
     private NettyClientConfig nettyClientConfig;
+
+    private Set<String> nodeSet=new HashSet<>();
 
     @PostConstruct
     public void init() {
@@ -44,12 +44,36 @@ public class CilentInit {
             // 如果不存在 则创建节点
             zkClientUtils.createPersistent(namespace);
         }
-
         Map<String, List<String[]>> mapAddress = nettyClientConfig.getMapAddress();
 
-        List<String> childNodes = zkClientUtils.getNodes(namespace);
-        for (String childNode : childNodes) {
+        // 给根节点建立监听
+        zkClientUtils.addNodeListener(namespace, new IZkChildListener() {
+            @Override
+            public void handleChildChange(String s, List<String> list) throws Exception {
+                // 给根节点的新添加的子节点创建监听
+                addNodeListener(list, s, mapAddress);
+            }
+        });
 
+        // 获取根路径下的子节点
+        List<String> childNodes = zkClientUtils.getNodes(namespace);
+
+        addNodeListener(childNodes, namespace, mapAddress);
+    }
+
+
+    /**
+     * 给子节点创建监听
+     * @param childNodes
+     * @param namespace
+     * @param mapAddress
+     */
+    private void addNodeListener(List<String> childNodes,String namespace,Map<String, List<String[]>> mapAddress){
+        //遍历子节点，并给子节点建立监听
+        for (String childNode : childNodes) {
+            if (!nodeSet.add(childNode)) {
+                continue;
+            }
             String path = namespace + "/" + childNode;
 
             List<String> ipNodes = zkClientUtils.getNodes(path);
