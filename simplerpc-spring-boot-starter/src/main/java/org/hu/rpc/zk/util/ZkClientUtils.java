@@ -36,6 +36,9 @@ public class ZkClientUtils {
 
 
     public String getNamespace() {
+        if (!namespace.startsWith("/")) {
+            namespace = "/" + namespace;
+        }
         return namespace;
     }
 
@@ -124,6 +127,17 @@ public class ZkClientUtils {
         zkClient.createEphemeralSequential(path, data);
     }
 
+
+    /**
+     * 更改节点内容
+     * @param path
+     * @param data
+     * @throws Exception
+     */
+    public void updataNode(String path,String data) {
+
+        zkClient.writeData(path,data);
+    }
     /**
      * 删除节点：删除节点
      */

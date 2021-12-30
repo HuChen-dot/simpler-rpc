@@ -33,6 +33,12 @@ public class UserServiceImpl implements IUserService {
             userMap.put(user1.getId(), user1);
             userMap.put(user2.getId(), user2);
         }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return userMap.get(id);
     }
 }

@@ -1,5 +1,7 @@
 package org.hu.rpc.config.loadbalancing;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 /**
@@ -7,6 +9,7 @@ import java.util.List;
  * @Description: 随机的负载均衡算法
  * @DateTime: 2021/12/27 9:12 PM
  **/
+@Component
 public class RandomRpcLoadBalancing implements RpcLoadBalancing{
 
 
@@ -16,7 +19,7 @@ public class RandomRpcLoadBalancing implements RpcLoadBalancing{
      * @return
      */
     @Override
-    public String[] load(List<String[]> services) {
+    public String[] load(List<String[]> services,String path) {
         // 此处负载均衡策略为随机
         int i = (int) (System.currentTimeMillis() % services.size());
         return services.get(i);

@@ -13,5 +13,5 @@ public interface RpcLoadBalancing {
     /**
      * 负载均衡方法
      */
-    String[] load(List<String[]> services);
+    String[] load(List<String[]> services,String path);
 }

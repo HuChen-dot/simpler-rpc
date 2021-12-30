@@ -20,7 +20,7 @@ public class UserServiceImpl implements IUserService {
     Map<Object, User> userMap = new HashMap();
 
     @Override
-    public User getById(int id) {
+    public User getById(int id){
         if (userMap.size() == 0) {
             User user1 = new User();
             user1.setId(1);
@@ -30,6 +30,12 @@ public class UserServiceImpl implements IUserService {
             user2.setName("服务2：赵六");
             userMap.put(user1.getId(), user1);
             userMap.put(user2.getId(), user2);
+        }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return userMap.get(id);
     }

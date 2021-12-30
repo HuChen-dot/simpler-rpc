@@ -1,11 +1,7 @@
 package org.hu.rpc.config;
 
-import org.hu.rpc.config.loadbalancing.DefaultRpcLoadBalancing;
-import org.hu.rpc.config.loadbalancing.LoadBalancingConst;
-import org.hu.rpc.config.loadbalancing.RandomRpcLoadBalancing;
-import org.hu.rpc.config.loadbalancing.RpcLoadBalancing;
-import org.hu.rpc.zk.util.ZkClientUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.hu.rpc.config.loadbalancing.*;
+import org.hu.rpc.util.BeanUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
@@ -58,9 +54,9 @@ public class NettyClientConfig {
 
 
     public String[] getHostAndPort(String path) {
-        if (mapAddress.size()==0) {
+        if (mapAddress.size() == 0) {
             synchronized (this) {
-                if (mapAddress.size()==0) {
+                if (mapAddress.size() == 0) {
 // ministry_of_personne|order//127.0.0.1:8091&127.0.0.1:8092|user//127.0.0.1:8091&127.0.0.1:8092,electronic|order//127.0.0.1:8091&127.0.0.1:8092|user//127.0.0.1:8091&127.0.0.1:8092
                     String[] depts = address.split(",");
                     for (String dept : depts) {
@@ -106,7 +102,7 @@ public class NettyClientConfig {
 
         }
         RpcLoadBalancing rpcLoadBalancing = getRpcLoadBalancing();
-        return rpcLoadBalancing.load(services);
+        return rpcLoadBalancing.load(services, path);
     }
 
     /**
@@ -116,14 +112,20 @@ public class NettyClientConfig {
      */
     private RpcLoadBalancing getRpcLoadBalancing() {
         switch (loadbalancing) {
-            case "polling": {
-                return new DefaultRpcLoadBalancing();
+            case LoadBalancingConst.POLLING: {
+
+                return BeanUtils.getBean(DefaultRpcLoadBalancing.class);
             }
-            case "random": {
-                return new RandomRpcLoadBalancing();
+            case LoadBalancingConst.RANDOM: {
+
+                return BeanUtils.getBean(RandomRpcLoadBalancing.class);
+            }
+            case LoadBalancingConst.RESPONSE_TIME: {
+                return BeanUtils.getBean(ResponseTimeRpcLoadBalancing.class);
             }
             default: {
-                return new DefaultRpcLoadBalancing();
+                return BeanUtils.getBean(DefaultRpcLoadBalancing.class);
+
             }
         }
     }

@@ -8,7 +8,7 @@ simplerpc:
       #  netty连接地址
       address: xhs|oa//127.0.0.1:9091&127.0.0.1:9092
       connecttimeout: 3000
-#      loadbalancing: random
+      loadbalancing: response_time
       threadpoll:
         threadSize: 10
     zk:

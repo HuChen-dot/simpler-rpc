@@ -1,5 +1,7 @@
 package org.hu.rpc.config.loadbalancing;
 
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 /**
@@ -7,6 +9,7 @@ import java.util.List;
  * @Description: 默认轮询的负载均衡策略
  * @DateTime: 2021/12/27 9:09 PM
  **/
+@Component
 public class DefaultRpcLoadBalancing implements RpcLoadBalancing{
 
     /**
@@ -15,7 +18,7 @@ public class DefaultRpcLoadBalancing implements RpcLoadBalancing{
     private volatile static int count=0;
 
     @Override
-    public String[] load(List<String[]> services) {
+    public String[] load(List<String[]> services,String path) {
         if(count==services.size()){
             count=0;
         }
