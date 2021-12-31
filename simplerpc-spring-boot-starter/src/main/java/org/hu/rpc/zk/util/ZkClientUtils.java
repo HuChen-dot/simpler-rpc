@@ -8,6 +8,8 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,8 @@ import java.util.List;
 @EnableConfigurationProperties(ZkClientUtils.class)
 @ConfigurationProperties(prefix = "simplerpc.netty.zk")
 public class ZkClientUtils {
+
+    private static Logger log = LoggerFactory.getLogger(ZkClientUtils.class);
 
 
     private  CuratorFramework client;
@@ -86,7 +90,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建持久节点失败：{}",e);
         }
     }
 
@@ -101,7 +105,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().forPath(path, data.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建持久节点并添加节点内容失败：{}",e);
         }
     }
 
@@ -115,7 +119,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(path, data.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建持久顺序节点并添加节点内容失败：{}",e);
         }
     }
 
@@ -129,7 +133,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建临时节点失败：{}",e);
         }
     }
 
@@ -143,7 +147,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL).forPath(path, data.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建临时节点并给节点添加内容失败：{}",e);
         }
     }
 
@@ -157,7 +161,7 @@ public class ZkClientUtils {
         try {
             client.create().creatingParentsIfNeeded().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(path, data.getBytes(StandardCharsets.UTF_8));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("创建临时顺序节点并添加节点内容失败：{}",e);
         }
     }
 
@@ -168,7 +172,7 @@ public class ZkClientUtils {
         try {
             client.delete().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("删除节点失败：{}",e);
         }
     }
 
@@ -179,7 +183,7 @@ public class ZkClientUtils {
         try {
             client.delete().deletingChildrenIfNeeded().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("递归删除节点失败：{}",e);
         }
     }
 
@@ -190,7 +194,7 @@ public class ZkClientUtils {
         try {
             client.delete().deletingChildrenIfNeeded().withVersion(version).forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("删除节点并指定版本失败：{}",e);
         }
     }
 
@@ -202,7 +206,7 @@ public class ZkClientUtils {
         try {
             nodes = client.getChildren().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("获取某节点的子节点列表失败：{}",e);
         }
         return nodes;
     }
@@ -226,7 +230,7 @@ public class ZkClientUtils {
         try {
             cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("给节点添加事件失败：{}",e);
         }
         // 添加事件监听器
         cache.getListenable().addListener(listener);
@@ -244,7 +248,7 @@ public class ZkClientUtils {
         try {
             stat = client.checkExists().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("判断节点是否存在失败：{}",e);
         }
 
         return stat != null;
@@ -260,7 +264,7 @@ public class ZkClientUtils {
         try {
             bytes = client.getData().forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("读取节点内容失败：{}",e);
         }
         return new String(bytes);
     }
@@ -277,7 +281,7 @@ public class ZkClientUtils {
         try {
             client.setData().forPath(path, data.getBytes());
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("更改节点内容失败：{}",e);
         }
     }
 

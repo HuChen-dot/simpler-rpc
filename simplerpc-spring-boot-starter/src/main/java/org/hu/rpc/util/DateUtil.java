@@ -1,5 +1,8 @@
 package org.hu.rpc.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,7 +17,7 @@ import java.util.List;
  * @DateTime: 2021/12/30 5:09 PM
  **/
 public class DateUtil {
-
+    private static Logger log = LoggerFactory.getLogger(DateUtil.class);
 
     /**
      * 时间转成字符串
@@ -41,7 +44,7 @@ public class DateUtil {
             long diff = newdate.getTime() - parse.getTime();
             return diff;
         } catch (ParseException e) {
-            e.printStackTrace();
+            log.error("计算两个时间的差值失败：{}",e);
         }
         return -1;
     }
@@ -62,7 +65,7 @@ public class DateUtil {
                 try {
                     return f.parse(o1).compareTo(f.parse(o2));
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    log.error("对两个时间进行比较失败：{}",e);
                 }
                 return 1;
             }

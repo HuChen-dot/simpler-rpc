@@ -9,6 +9,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.logging.LoggingHandler;
 import org.hu.rpc.config.NettyServerConfig;
 import org.hu.rpc.zk.server.ServerInit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,6 +29,8 @@ import javax.annotation.PreDestroy;
 @ConfigurationProperties(prefix = "simplerpc.netty.server.threadpoll")
 @Configuration
 public class NettyRpcServer implements Runnable {
+    Logger log = LoggerFactory.getLogger(NettyRpcServer.class);
+
 
     /**
      * 连接处理线程数
@@ -107,22 +111,20 @@ public class NettyRpcServer implements Runnable {
 
                     // 绑定端口,同时将异步修改成同步
                     ChannelFuture channelFuture = serverBootstrap.bind(nettyServerConfig.getPort()).sync();
-
                     // 启动 zk 注册中心
                     serverInit.init(nettyServerConfig.getPort());
 
-                    System.err.println("Netty 服务端启动成功");
+                    log.info("Netty server running.....");
 
                     //关闭通道--(并不是真正意义上的关闭，而是监听通道关闭的状态）
                     channelFuture.channel().closeFuture().sync();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    System.err.println("发生异常，关闭资源");
+                    log.error("发生异常，关闭资源：{}",e);
                     //11: 关闭连接池
                     bossGroup.shutdownGracefully();
                     workerGroup.shutdownGracefully();
                 } finally {
-                    System.err.println("最终关闭资源");
+                    log.info("最终关闭资源");
                     //11: 关闭连接池
                     bossGroup.shutdownGracefully();
                     workerGroup.shutdownGracefully();
@@ -135,11 +137,11 @@ public class NettyRpcServer implements Runnable {
     @PreDestroy
     public void destroy() {
         if (bossGroup != null) {
-            System.err.println("bossGroup销毁");
+            log.info("bossGroup销毁");
             bossGroup.shutdownGracefully();
         }
         if (workerGroup != null) {
-            System.err.println("workerGroup销毁");
+            log.info("workerGroup销毁");
             workerGroup.shutdownGracefully();
         }
     }

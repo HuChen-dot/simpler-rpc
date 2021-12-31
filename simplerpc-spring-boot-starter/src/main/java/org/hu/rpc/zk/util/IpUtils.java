@@ -1,5 +1,7 @@
 package org.hu.rpc.zk.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.net.*;
@@ -11,6 +13,7 @@ import java.util.Enumeration;
  * @DateTime: 2021/12/29 1:12 PM
  **/
 public class IpUtils {
+   private static Logger log = LoggerFactory.getLogger(IpUtils.class);
 
     /**
      * 获取本机内网ip地址
@@ -24,7 +27,7 @@ public class IpUtils {
             try {
                 ip = InetAddress.getLocalHost();
             } catch (UnknownHostException e) {
-                e.printStackTrace();
+                log.error("获取本机内网地址失败：{}",e);
             }
             if (ip != null) {
                 return ip.getHostAddress();
@@ -57,18 +60,14 @@ public class IpUtils {
                             String ipaddress = inetAddress.getHostAddress().toString();
                             if (!ipaddress.contains("::") && !ipaddress.contains("0:0:") && !ipaddress.contains("fe80")) {
                                 ip = ipaddress;
-                                System.out.println(ipaddress);
                             }
                         }
                     }
                 }
             }
         } catch (SocketException ex) {
-            System.out.println("获取ip地址异常");
             ip = "127.0.0.1";
-            ex.printStackTrace();
         }
-        System.out.println("IP:" + ip);
         return ip;
     }
 
@@ -88,7 +87,7 @@ public class IpUtils {
         try {
             allNetInterfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e) {
-            e.printStackTrace();
+            log.error("获取本地地址失败：{}",e);
         }
         while (allNetInterfaces.hasMoreElements()) {
             NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();

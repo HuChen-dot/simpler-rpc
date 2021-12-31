@@ -11,6 +11,8 @@ import io.netty.handler.codec.string.StringEncoder;
 import org.hu.rpc.util.ThreadPoolUtil;
 import org.hu.rpc.common.RpcResponse;
 import org.hu.rpc.config.NettyClientConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.*;
 
@@ -23,6 +25,8 @@ import java.util.concurrent.*;
  * @DateTime: 2021/12/26 8:44 PM
  **/
 public class NettyRpcClient {
+
+    private static Logger log = LoggerFactory.getLogger(NettyRpcClient.class);
 
 
     private NettyClientConfig nettyClientConfig;
@@ -71,21 +75,18 @@ public class NettyRpcClient {
             bootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 protected void initChannel(SocketChannel channel) throws Exception {
-
                     // 设置编解码器
                     channel.pipeline().addLast(new StringDecoder());
                     channel.pipeline().addLast(new StringEncoder());
-
 
                     //8：向pipeline中添加自定义业务处理handier
                     channel.pipeline().addLast(rpctClientHandler);
                 }
             });
-
             //7: 启动客户端绑定端口，同时将异步改为同步
             channel = bootstrap.connect(hostAndPort[0], Integer.parseInt(hostAndPort[1])).sync().channel();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Netty 启动失败：{}",e);
             // 关闭资源
             close();
         }

@@ -3,7 +3,7 @@ package org.hu.rpc.zk.client;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
-import org.hu.rpc.config.NettyClientConfig;
+import org.hu.rpc.core.route.RouteStrategy;
 import org.hu.rpc.zk.util.ZkClientUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class CilentInit {
     private ZkClientUtils zkClientUtils;
 
     @Autowired
-    private NettyClientConfig nettyClientConfig;
+    private  RouteStrategy routeStrategy;
 
     private Set<String> nodeSet=new HashSet<>();
 
@@ -45,7 +45,7 @@ public class CilentInit {
             // 如果不存在 则创建节点
             zkClientUtils.createPersistent(namespace);
         }
-        Map<String, List<String[]>> mapAddress = nettyClientConfig.getMapAddress();
+        Map<String, List<String[]>> mapAddress = routeStrategy.getMapAddress();
 
         zkClientUtils.addNodeListener(namespace, new PathChildrenCacheListener() {
             @Override
@@ -94,7 +94,7 @@ public class CilentInit {
                     if(CHILD_ADDED==pathChildrenCacheEvent.getType()||CHILD_REMOVED==pathChildrenCacheEvent.getType()){
                         List<String> list = zkClientUtils.getNodes(path);
 
-                        Map<String, List<String[]>> mapAddress1 = nettyClientConfig.getMapAddress();
+                        Map<String, List<String[]>> mapAddress1 = routeStrategy.getMapAddress();
                         List<String[]> ipArray = new ArrayList<>();
                         for (String ipNode : list) {
                             ipArray.add(ipNode.split(":"));

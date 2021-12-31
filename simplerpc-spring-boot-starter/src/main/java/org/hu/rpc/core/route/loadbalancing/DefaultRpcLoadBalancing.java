@@ -1,4 +1,4 @@
-package org.hu.rpc.config.loadbalancing;
+package org.hu.rpc.core.route.loadbalancing;
 
 import org.springframework.stereotype.Component;
 

@@ -1,5 +1,6 @@
-package org.hu.rpc.config.loadbalancing;
+package org.hu.rpc.core.route.loadbalancing;
 
+import org.hu.rpc.exception.SimpleRpcException;
 import org.hu.rpc.util.DateUtil;
 import org.hu.rpc.zk.util.ZkClientUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ResponseTimeRpcLoadBalancing implements RpcLoadBalancing {
     @Override
     public String[] load(List<String[]> services, String path) {
         if (!zkClientUtils.isOpenzk()) {
-            throw new RuntimeException("使用响应时间进行负载均衡，必须使用zk作为注册中心");
+            throw new SimpleRpcException("使用响应时间进行负载均衡，必须使用zk作为注册中心");
         }
         int i = 1000000;
 

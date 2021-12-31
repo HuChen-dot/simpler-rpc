@@ -8,7 +8,10 @@ import org.hu.rpc.annotation.RpcAutowired;
 import org.hu.rpc.annotation.RpcService;
 import org.hu.rpc.common.RpcRequest;
 import org.hu.rpc.common.RpcResponse;
+import org.hu.rpc.exception.SimpleRpcException;
 import org.hu.rpc.proxy.JdkProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 // @ChannelHandler.Sharable 这个注解代表，当前这个处理类，可以被多个通道共享
 @ChannelHandler.Sharable
 public class RpctServerHandler extends SimpleChannelInboundHandler<String> implements ApplicationContextAware {
+
+    Logger log = LoggerFactory.getLogger(RpctServerHandler.class);
 
     /**
      * 用来存储 被标记了@RpcService 注解的bean
@@ -60,7 +65,7 @@ public class RpctServerHandler extends SimpleChannelInboundHandler<String> imple
             try {
                 doInvoke(request, response);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("请求参数校验失败：{}",e);
                 response.setError(e.getMessage());
             }
         }
@@ -135,7 +140,7 @@ public class RpctServerHandler extends SimpleChannelInboundHandler<String> imple
             Class<?>[] interfaces = serviceBean.getClass().getInterfaces();
 
             if (interfaces.length == 0) {
-                throw new RuntimeException("类：" + serviceBean.getClass().getName() + " 必须实现接口");
+                throw new SimpleRpcException("类：" + serviceBean.getClass().getName() + " 必须实现接口");
             }
 
             // 默认获取第一个接口作为key 的名称
@@ -171,8 +176,7 @@ public class RpctServerHandler extends SimpleChannelInboundHandler<String> imple
                     try {
                         declaredField.set(bean, proxy);
                     } catch (IllegalAccessException e) {
-                        System.err.println("设置bean属性失败");
-                        e.printStackTrace();
+                        log.error("设置bean属性失败：{}",e);
                     }
                 }
             }

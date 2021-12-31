@@ -5,10 +5,14 @@ import org.hu.rpc.common.RpcRequest;
 import org.hu.rpc.common.RpcResponse;
 import org.hu.rpc.config.NettyClientConfig;
 import org.hu.rpc.core.client.NettyRpcClient;
+import org.hu.rpc.core.route.RouteStrategy;
+import org.hu.rpc.exception.SimpleRpcException;
 import org.hu.rpc.util.DateUtil;
 import org.hu.rpc.util.JsonUtils;
 import org.hu.rpc.zk.util.ZkClientUtils;
 import org.hu.rpc.zk.util.ZkLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -32,9 +36,13 @@ import java.util.UUID;
 @ConfigurationProperties(prefix = "simplerpc.netty.client.threadpoll")
 public class JdkProxy {
 
+    private static Logger log = LoggerFactory.getLogger(JdkProxy.class);
 
     @Autowired
     private NettyClientConfig nettyClientConfig;
+
+    @Autowired
+    private RouteStrategy routeStrategy;
 
     @Autowired
     private ZkLock zkLock;
@@ -52,10 +60,10 @@ public class JdkProxy {
                 RpcRequest request = new RpcRequest();
                 Class<?> declaringClass = method.getDeclaringClass();
 
-               String tag= declaringClass.getName();
+                String tag = declaringClass.getName();
 
                 // 获取提供服务的机器的ip和端口
-                String[] hostAndPort = nettyClientConfig.getHostAndPort(tag);
+                String[] hostAndPort = routeStrategy.getHostAndPort(tag);
 
                 // 设置请求标识
                 request.setRequestId(UUID.randomUUID().toString());
@@ -81,20 +89,21 @@ public class JdkProxy {
                     long end = System.currentTimeMillis();
 
 
-
                     if (send.getError() != null) {
-                        throw new RuntimeException(send.getError());
+                        throw new SimpleRpcException(send.getError());
                     }
 
                     Object result = send.getResult();
 
-                    String s1 = DateUtil.dateToStr(new Date());
-                    s1= (end-start)+"&"+s1;
-                    zkLock.lock();
-                    try{
-                        zkClientUtils.updataNode(zkClientUtils.getNameSpace()+"/"+tag+"/"+hostAndPort[0]+":"+hostAndPort[1],s1);
-                    }finally {
-                        zkLock.unLock();
+                    if (zkClientUtils.isOpenzk()) {
+                        String s1 = DateUtil.dateToStr(new Date());
+                        s1 = (end - start) + "&" + s1;
+                        zkLock.lock();
+                        try {
+                            zkClientUtils.updataNode(zkClientUtils.getNameSpace() + "/" + tag + "/" + hostAndPort[0] + ":" + hostAndPort[1], s1);
+                        } finally {
+                            zkLock.unLock();
+                        }
                     }
                     if (result == null) {
                         return result;
@@ -106,7 +115,7 @@ public class JdkProxy {
                     }
 
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("远程调用失败：{}", e);
                 } finally {
                     // 关闭资源
                     nettyRpcClient.close();

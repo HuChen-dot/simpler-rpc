@@ -6,9 +6,9 @@ simplerpc:
       isrun: false
     client:
       #  netty连接地址
-      address: xhs|oa//127.0.0.1:9091&127.0.0.1:9092
+      address: {com.hu.api.IUserService: 127.0.0.1:9091&127.0.0.1:9092,com.hu.api.OrderService: 127.0.0.1:9091}
       connecttimeout: 3000
-      loadbalancing: response_time
+#      loadbalancing: response_time
       threadpoll:
         threadSize: 10
     zk:

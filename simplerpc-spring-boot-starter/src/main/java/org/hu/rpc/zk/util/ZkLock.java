@@ -3,6 +3,8 @@ package org.hu.rpc.zk.util;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,8 @@ import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.
  **/
 @Component
 public class ZkLock {
+
+  private  Logger log = LoggerFactory.getLogger(ZkLock.class);
 
     private static final String ROOT_NODE = "/zklock";
 
@@ -73,7 +77,7 @@ public class ZkLock {
                 try {
                     countDownLatch.await();
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    log.error("获取锁失败，休眠时异常：{}",e);
                 }
             }
         }
@@ -95,7 +99,7 @@ public class ZkLock {
                     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            System.err.println("程序异常关闭，执行回调删除锁.....");
+                            log.info("程序关闭，执行回调删除锁.....");
                             isRun = false;
                             //释放锁
                             zkClientUtils.delete(zkClientUtils.getNameSpace() + ROOT_NODE + LOCK_NODE);
