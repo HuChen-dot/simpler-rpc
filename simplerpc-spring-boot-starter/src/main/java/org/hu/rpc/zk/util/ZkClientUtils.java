@@ -281,6 +281,13 @@ public class ZkClientUtils {
         }
     }
 
+    /**
+     * 关闭客户端连接
+     */
+    public void close(){
+        client.close();
+    }
+
     public String getAddress() {
         return address;
     }

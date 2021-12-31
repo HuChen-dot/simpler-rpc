@@ -6,6 +6,7 @@ import org.hu.rpc.zk.util.ZkClientUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.List;
 
 /**
@@ -61,6 +62,16 @@ public class ServerInit {
             zkClientUtils.createEphemeral(ipPath);
         }
 
+    }
+
+    /**
+     * 容器关闭时，关闭和zk服务器的连接
+     */
+    @PreDestroy
+    public void close(){
+        if (zkClientUtils.isOpenzk()) {
+            zkClientUtils.close();
+        }
     }
 
 
