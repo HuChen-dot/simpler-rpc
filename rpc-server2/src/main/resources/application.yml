@@ -14,5 +14,5 @@ simplerpc:
         #    服务端bossGroup 的等待队列大小
         bossGroupQueueSize: 128
     zk:
-      address: 192.168.73.131:2191,192.168.73.131:2192,192.168.73.131:2193
+      address: 139.196.79.22:2181
       openzk: true

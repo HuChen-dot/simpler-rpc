@@ -8,11 +8,11 @@ simplerpc:
       #  netty连接地址
       address: {com.hu.api.IUserService: 127.0.0.1:9091&127.0.0.1:9092,com.hu.api.OrderService: 127.0.0.1:9091}
       connecttimeout: 3000
-#      loadbalancing: response_time
+      loadbalancing: response_time
       threadpoll:
         threadSize: 10
     zk:
-      address: 192.168.73.131:2191,192.168.73.131:2192,192.168.73.131:2193
+      address: 139.196.79.22:2181
       openzk: true
 
 

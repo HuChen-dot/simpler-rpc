@@ -35,7 +35,12 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-
+        <!--引入自定义rpc框架-->
+        <dependency>
+            <groupId>org.hu.rpc</groupId>
+            <artifactId>simplerpc-spring-boot-starter</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
 
     </dependencies>

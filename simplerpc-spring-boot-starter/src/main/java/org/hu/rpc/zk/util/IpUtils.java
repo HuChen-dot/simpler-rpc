@@ -2,7 +2,6 @@ package org.hu.rpc.zk.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 import java.net.*;
 import java.util.Enumeration;
@@ -16,125 +15,39 @@ public class IpUtils {
    private static Logger log = LoggerFactory.getLogger(IpUtils.class);
 
     /**
-     * 获取本机内网ip地址
+     * 获取本机ip地址
      **/
     public static String getLocalIpAddr() {
-        if (isLinux()) {
-            return getLinuxLocalIp();
-        }
+
+        String sIP = "";
         InetAddress ip = null;
-        if (isWindows()) {
-            try {
-                ip = InetAddress.getLocalHost();
-            } catch (UnknownHostException e) {
-                log.error("获取本机内网地址失败：{}",e);
-            }
-            if (ip != null) {
-                return ip.getHostAddress();
-            }
-        }
-        String ipAddress = getLocalIp(true);
-        if (StringUtils.isEmpty(ipAddress)) {//如果eth0网卡为空
-            ipAddress = getLocalIp(false);
-        }
-        return ipAddress;
-    }
-
-
-    /**
-     * 获取Linux下的IP地址
-     *
-     * @return IP地址
-     * @throws SocketException
-     */
-    private static String getLinuxLocalIp() {
-        String ip = "";
         try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                String name = intf.getName();
-                if (!name.contains("docker") && !name.contains("lo")) {
-                    for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                        InetAddress inetAddress = enumIpAddr.nextElement();
-                        if (!inetAddress.isLoopbackAddress()) {
-                            String ipaddress = inetAddress.getHostAddress().toString();
-                            if (!ipaddress.contains("::") && !ipaddress.contains("0:0:") && !ipaddress.contains("fe80")) {
-                                ip = ipaddress;
-                            }
-                        }
+            boolean bFindIP = false;
+            Enumeration<NetworkInterface> netInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (netInterfaces.hasMoreElements()) {
+                if (bFindIP) {
+                    break;
+                }
+                NetworkInterface ni = netInterfaces.nextElement();
+                Enumeration<InetAddress> ips = ni.getInetAddresses();
+                while (ips.hasMoreElements()) {
+                    ip = ips.nextElement();
+                    if (!ip.isLoopbackAddress()
+                            && ip.getHostAddress().matches("(\\d{1,3}\\.){3}\\d{1,3}")) {
+                        bFindIP = true;
+                        break;
                     }
                 }
             }
-        } catch (SocketException ex) {
-            ip = "127.0.0.1";
+        } catch (Exception e) {
+            log.error("获取ip地址失败：{}",e);
         }
-        return ip;
+        if (null != ip) {
+            sIP = ip.getHostAddress();
+        }
+        return sIP;
     }
 
 
-    /**
-     * 获取本地地址
-     *
-     * @param justEth0 true - 只看eth0  false  所有
-     * @return
-     * @Date:2014-4-24
-     * @Author:Guibin Zhang
-     * @Description:
-     */
-    private static String getLocalIp(boolean justEth0) {
-        InetAddress ip = null;
-        Enumeration<NetworkInterface> allNetInterfaces = null;
-        try {
-            allNetInterfaces = NetworkInterface.getNetworkInterfaces();
-        } catch (SocketException e) {
-            log.error("获取本地地址失败：{}",e);
-        }
-        while (allNetInterfaces.hasMoreElements()) {
-            NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
-            if (!justEth0 || "eth0".equalsIgnoreCase(netInterface.getName())) {
-                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    ip = (InetAddress) addresses.nextElement();
-                    if (ip != null && ip.getHostAddress() != null && ip instanceof Inet4Address && ip.getHostAddress().indexOf(".") != -1
-                            && !ip.getHostAddress().startsWith("192.168.") && !"127.0.0.1".equals(ip.getHostAddress()) && !"localhost".equals(ip.getHostAddress())) {
-                        return ip.getHostAddress();
-                    }
-                }
-            }
-        }
-        return null;
-    }
 
-    /**
-     * 判断系统是不是windows
-     **/
-    public static boolean isWindows() {
-        String osName = System.getProperty("os.name");
-        if (osName.toLowerCase().indexOf("windows") > -1) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 判断系统是不是mac
-     **/
-    public static boolean isMac() {
-        String osName = System.getProperty("os.name");
-        if (osName.toLowerCase().indexOf("mac") > -1) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 判断系统是不是linux
-     **/
-    public static boolean isLinux() {
-        String osName = System.getProperty("os.name");
-        if (osName.toLowerCase().indexOf("linux") > -1) {
-            return true;
-        }
-        return false;
-    }
 }
