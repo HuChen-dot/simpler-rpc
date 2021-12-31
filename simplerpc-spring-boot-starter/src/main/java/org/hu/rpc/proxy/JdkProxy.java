@@ -6,6 +6,7 @@ import org.hu.rpc.common.RpcResponse;
 import org.hu.rpc.config.NettyClientConfig;
 import org.hu.rpc.core.client.NettyRpcClient;
 import org.hu.rpc.core.route.RouteStrategy;
+import org.hu.rpc.core.route.loadbalancing.LoadBalancingConst;
 import org.hu.rpc.exception.SimpleRpcException;
 import org.hu.rpc.util.DateUtil;
 import org.hu.rpc.util.JsonUtils;
@@ -80,14 +81,14 @@ public class JdkProxy {
                 NettyRpcClient nettyRpcClient = new NettyRpcClient(nettyClientConfig, hostAndPort);
                 try {
 
-                    String s = JSON.toJSONString(request);
+                    String requestData = JSON.toJSONString(request);
 
+                    // 记录rpc请求时间
                     long start = System.currentTimeMillis();
 
-                    RpcResponse send = nettyRpcClient.send(s);
+                    RpcResponse send = nettyRpcClient.send(requestData);
 
                     long end = System.currentTimeMillis();
-
 
                     if (send.getError() != null) {
                         throw new SimpleRpcException(send.getError());
@@ -95,16 +96,10 @@ public class JdkProxy {
 
                     Object result = send.getResult();
 
-                    if (zkClientUtils.isOpenzk()) {
-                        String s1 = DateUtil.dateToStr(new Date());
-                        s1 = (end - start) + "&" + s1;
-                        zkLock.lock();
-                        try {
-                            zkClientUtils.updataNode(zkClientUtils.getNameSpace() + "/" + tag + "/" + hostAndPort[0] + ":" + hostAndPort[1], s1);
-                        } finally {
-                            zkLock.unLock();
-                        }
+                    if (zkClientUtils.isOpenzk() && LoadBalancingConst.RESPONSE_TIME.equals(nettyClientConfig.getLoadbalancing())) {
+                        setNodeContent(start, end, tag, hostAndPort);
                     }
+
                     if (result == null) {
                         return result;
                     } else {
@@ -123,7 +118,23 @@ public class JdkProxy {
                 return null;
             }
         });
+    }
 
+    /**
+     * 给节点设置内容
+     */
+    private void setNodeContent(long start, long end, String tag, String[] hostAndPort) {
+        String s1 = DateUtil.dateToStr(new Date());
+        s1 = (end - start) + "&" + s1;
+        StringBuffer buffer = new StringBuffer(zkClientUtils.getNameSpace())
+                .append("/").append(tag).append("/").append(hostAndPort[0])
+                .append(":").append(hostAndPort[1]);
+        zkLock.lock();
+        try {
+            zkClientUtils.updataNode(buffer.toString(), s1);
+        } finally {
+            zkLock.unLock();
+        }
 
     }
 }
