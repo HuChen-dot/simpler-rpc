@@ -99,7 +99,6 @@ public class NettyClientConfig {
         List<String[]> services = mapAddress.get(path);
         if (services == null || services.size() == 0) {
             throw new RuntimeException("没有可以提供服务的服务者");
-
         }
         RpcLoadBalancing rpcLoadBalancing = getRpcLoadBalancing();
         return rpcLoadBalancing.load(services, path);

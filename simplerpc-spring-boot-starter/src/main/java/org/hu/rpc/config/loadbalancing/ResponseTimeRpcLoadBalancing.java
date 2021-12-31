@@ -23,7 +23,7 @@ public class ResponseTimeRpcLoadBalancing implements RpcLoadBalancing {
     /**
      * 定义相差多长时间，忽略
      */
-    private static final long time = 50000;
+    private static final long time = 5000;
 
     @Override
     public String[] load(List<String[]> services, String path) {
@@ -38,12 +38,12 @@ public class ResponseTimeRpcLoadBalancing implements RpcLoadBalancing {
         Date date = new Date();
 
         for (String[] service : services) {
-            String dataStr = zkClientUtils.readNode(zkClientUtils.getNamespace() + "/" + path + "/" + service[0] + ":" + service[1]);
+            String dataStr = zkClientUtils.readNode(zkClientUtils.getNameSpace() + "/" + path + "/" + service[0] + ":" + service[1]);
             // 为空，代表是新机器加入集群，先让其执行一次
-            if (dataStr == null || dataStr.length() == 0) {
+            if (dataStr == null || dataStr.indexOf("&")==-1) {
                 return service;
             }
-            // dataStr == 21:2021-12-28 12:33:45
+            // dataStr == 21&2021-12-28 12:33:45
             String[] split = dataStr.split("&");
             int i1 = Integer.parseInt(split[0]);
             if (i1 <= i) {
@@ -52,12 +52,11 @@ public class ResponseTimeRpcLoadBalancing implements RpcLoadBalancing {
                 // 判断当前时间和当前时间的差值，如果大于阀值，则清空，循环下一个
                 if (l > time) {
                     // 使用redis 懒删除策略
-                    zkClientUtils.updataNode(zkClientUtils.getNamespace() + "/" + service[0] + ":" + service[1], "");
+                    zkClientUtils.updataNode(zkClientUtils.getNameSpace() + "/" + path + "/" + service[0] + ":" + service[1], "");
                     continue;
                 }
                 i = i1;
                 List<String[]> list = map.get(i);
-                // 等于null 则代表，所有机器都已经超过阈值
                 if (list == null) {
                     list = new ArrayList<>();
                     map.put(i, list);
@@ -68,6 +67,7 @@ public class ResponseTimeRpcLoadBalancing implements RpcLoadBalancing {
 
         List<String[]> strings = map.get(i);
 
+        // 等于null 则代表，所有机器都已经超过阈值
         if (strings == null) {
             strings = services;
         }

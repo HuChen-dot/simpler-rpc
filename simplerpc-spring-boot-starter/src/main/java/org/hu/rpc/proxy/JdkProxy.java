@@ -1,7 +1,6 @@
 package org.hu.rpc.proxy;
 
 import com.alibaba.fastjson.JSON;
-import org.hu.rpc.annotation.RpcTag;
 import org.hu.rpc.common.RpcRequest;
 import org.hu.rpc.common.RpcResponse;
 import org.hu.rpc.config.NettyClientConfig;
@@ -42,7 +41,7 @@ public class JdkProxy {
 
 
     @Autowired
-    private  ZkClientUtils zkClientUtils;
+    private ZkClientUtils zkClientUtils;
 
     public Object createProxy(Class clazz) {
 
@@ -53,11 +52,7 @@ public class JdkProxy {
                 RpcRequest request = new RpcRequest();
                 Class<?> declaringClass = method.getDeclaringClass();
 
-                RpcTag rpcTag = declaringClass.getAnnotation(RpcTag.class);
-                if (rpcTag == null) {
-                    throw new RuntimeException("接口上没有定义：RpcTag 注解，无法区分你想要调用哪一个服务");
-                }
-               String tag= rpcTag.dept() + "." + rpcTag.service();
+               String tag= declaringClass.getName();
 
                 // 获取提供服务的机器的ip和端口
                 String[] hostAndPort = nettyClientConfig.getHostAndPort(tag);
@@ -97,7 +92,7 @@ public class JdkProxy {
                     s1= (end-start)+"&"+s1;
                     zkLock.lock();
                     try{
-                        zkClientUtils.updataNode(zkClientUtils.getNamespace()+"/"+tag+"/"+hostAndPort[0]+":"+hostAndPort[1],s1);
+                        zkClientUtils.updataNode(zkClientUtils.getNameSpace()+"/"+tag+"/"+hostAndPort[0]+":"+hostAndPort[1],s1);
                     }finally {
                         zkLock.unLock();
                     }

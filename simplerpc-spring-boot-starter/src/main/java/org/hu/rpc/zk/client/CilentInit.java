@@ -1,6 +1,8 @@
 package org.hu.rpc.zk.client;
 
-import org.I0Itec.zkclient.IZkChildListener;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
+import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.hu.rpc.config.NettyClientConfig;
 import org.hu.rpc.zk.util.ZkClientUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+
+import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_ADDED;
+import static org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent.Type.CHILD_REMOVED;
 
 /**
  * @Author: hu.chen
@@ -33,12 +38,8 @@ public class CilentInit {
         }
 
         // 获取根路径
-        String namespace = zkClientUtils.getNamespace();
+        String namespace = zkClientUtils.getNameSpace();
 
-        // 判断根路径是否存在 / 的前缀，进行处理
-        if (!namespace.startsWith("/")) {
-            namespace = "/" + namespace;
-        }
         // 判断根路径是否存在
         if (!zkClientUtils.exists(namespace)) {
             // 如果不存在 则创建节点
@@ -46,14 +47,22 @@ public class CilentInit {
         }
         Map<String, List<String[]>> mapAddress = nettyClientConfig.getMapAddress();
 
-        // 给根节点建立监听
-        zkClientUtils.addNodeListener(namespace, new IZkChildListener() {
+        zkClientUtils.addNodeListener(namespace, new PathChildrenCacheListener() {
             @Override
-            public void handleChildChange(String s, List<String> list) throws Exception {
-                // 给根节点的新添加的子节点创建监听
-                addNodeListener(list, s, mapAddress);
+            public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+
+                if(CHILD_ADDED==pathChildrenCacheEvent.getType()||CHILD_REMOVED==pathChildrenCacheEvent.getType()){
+
+                    List<String> nodes = zkClientUtils.getNodes(namespace);
+
+                    // 给根节点的新添加的子节点创建监听
+                    addNodeListener(nodes, namespace, mapAddress);
+
+                }
             }
         });
+
+
 
         // 获取根路径下的子节点
         List<String> childNodes = zkClientUtils.getNodes(namespace);
@@ -78,16 +87,21 @@ public class CilentInit {
 
             List<String> ipNodes = zkClientUtils.getNodes(path);
 
-            //给此节点创建监听，监听此节点下子节点列表的变化情况
-            zkClientUtils.addNodeListener(path, new IZkChildListener() {
+            zkClientUtils.addNodeListener(path, new PathChildrenCacheListener() {
                 @Override
-                public void handleChildChange(String s, List<String> list) throws Exception {
-                    Map<String, List<String[]>> mapAddress1 = nettyClientConfig.getMapAddress();
-                    List<String[]> ipArray = new ArrayList<>();
-                    for (String ipNode : list) {
-                        ipArray.add(ipNode.split(":"));
+                public void childEvent(CuratorFramework curatorFramework, PathChildrenCacheEvent pathChildrenCacheEvent) throws Exception {
+
+                    if(CHILD_ADDED==pathChildrenCacheEvent.getType()||CHILD_REMOVED==pathChildrenCacheEvent.getType()){
+                        List<String> list = zkClientUtils.getNodes(path);
+
+                        Map<String, List<String[]>> mapAddress1 = nettyClientConfig.getMapAddress();
+                        List<String[]> ipArray = new ArrayList<>();
+                        for (String ipNode : list) {
+                            ipArray.add(ipNode.split(":"));
+                        }
+                        mapAddress1.put(childNode, ipArray);
+
                     }
-                    mapAddress1.put(childNode, ipArray);
                 }
             });
 

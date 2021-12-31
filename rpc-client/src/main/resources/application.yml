@@ -14,7 +14,6 @@ simplerpc:
     zk:
       address: 192.168.73.131:2191,192.168.73.131:2192,192.168.73.131:2193
       openzk: true
-      namespace: test-rpc
 
 
 

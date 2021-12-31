@@ -1,6 +1,5 @@
 package org.hu.rpc.zk.server;
 
-import org.hu.rpc.annotation.RpcTag;
 import org.hu.rpc.core.server.RpctServerHandler;
 import org.hu.rpc.zk.util.IpUtils;
 import org.hu.rpc.zk.util.ZkClientUtils;
@@ -32,12 +31,8 @@ public class ServerInit {
         }
 
         // 获取根路径
-        String namespace = zkClientUtils.getNamespace();
+        String namespace = zkClientUtils.getNameSpace();
 
-        // 判断根路径是否存在 / 的前缀，进行处理
-        if (!namespace.startsWith("/")) {
-            namespace = "/" + namespace;
-        }
         // 判断根路径是否存在
         if (!zkClientUtils.exists(namespace)) {
             // 如果不存在 则创建节点
@@ -51,13 +46,9 @@ public class ServerInit {
 
 
         for (Class aClass : interfaceApi) {
-            RpcTag rpcTag = (RpcTag) aClass.getAnnotation(RpcTag.class);
-            if (rpcTag == null) {
-                throw new RuntimeException("接口上没有定义：RpcTag 注解，无法区分你想要调用哪一个服务");
-            }
 
             //拼装当前节点微服务的节点路径
-            String servicePath=namespace+"/"+rpcTag.dept() + "." + rpcTag.service();
+            String servicePath=namespace+"/"+aClass.getName();
 
             // 判断当前节点是否存在
             if(!zkClientUtils.exists(servicePath)) {
